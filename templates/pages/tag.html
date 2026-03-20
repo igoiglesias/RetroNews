@@ -1,0 +1,31 @@
+{% extends "components/base.html" %}
+
+{% block titulo %}#{{ nome_tag }} - RetroNews{% endblock %}
+
+{% block conteudo %}
+<h2 class="pagina-titulo">grep -r "{{ nome_tag }}" /noticias/</h2>
+
+{% if noticias %}
+<ul class="noticias">
+    {% for noticia in noticias %}
+    {% include "components/noticia_card.html" %}
+    {% endfor %}
+</ul>
+
+<div class="paginacao">
+    {% if pagina > 1 %}
+        <a href="/tag/{{ nome_tag }}?pagina={{ pagina - 1 }}">&lt; anterior</a>
+    {% else %}
+        <span class="desativado">&lt; anterior</span>
+    {% endif %}
+    <span class="atual">pagina {{ pagina }} de {{ total_paginas }}</span>
+    {% if pagina < total_paginas %}
+        <a href="/tag/{{ nome_tag }}?pagina={{ pagina + 1 }}">proxima &gt;</a>
+    {% else %}
+        <span class="desativado">proxima &gt;</span>
+    {% endif %}
+</div>
+{% else %}
+<p>Nenhuma noticia com a tag #{{ nome_tag }}.</p>
+{% endif %}
+{% endblock %}

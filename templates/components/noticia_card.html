@@ -1,0 +1,29 @@
+<li class="noticia">
+    <div class="noticia-titulo">
+        <a href="{{ noticia.url }}" target="_blank" rel="noopener">{{ noticia.titulo_pt or noticia.titulo }}</a>
+    </div>
+    <div class="noticia-meta">
+        <span>{{ noticia.feed.nome if noticia.feed else "?" }}</span>
+        {% if noticia.autor %}<span>{{ noticia.autor }}</span>{% endif %}
+        <span>{{ noticia.data_publicacao.strftime('%d/%m/%Y %H:%M') if noticia.data_publicacao else noticia.criado_em.strftime('%d/%m/%Y %H:%M') }}</span>
+    </div>
+    {% if noticia.resumo_ia %}
+    <div class="noticia-resumo">
+        {{ noticia.resumo_ia }}
+    </div>
+    {% elif noticia.resumo_original %}
+    <div class="noticia-resumo">
+        {{ noticia.resumo_original | truncate(300) }}
+    </div>
+    {% endif %}
+    {% if noticia.tags_list %}
+    <div class="tags">
+        {% for tag in noticia.tags_list %}
+        <a href="/tag/{{ tag.nome }}" class="tag">#{{ tag.nome }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="noticia-link">
+        <a href="{{ noticia.url }}" target="_blank" rel="noopener">{{ noticia.url | truncate(60) }}</a>
+    </div>
+</li>

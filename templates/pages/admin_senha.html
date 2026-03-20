@@ -1,0 +1,37 @@
+{% extends "components/base.html" %}
+
+{% block titulo %}Trocar Senha - RetroNews{% endblock %}
+
+{% block conteudo %}
+<h2 class="pagina-titulo">passwd {{ usuario }}</h2>
+
+{% include "components/admin_nav.html" %}
+
+{% if sucesso %}
+<div class="mensagem-sucesso">Senha alterada com sucesso.</div>
+{% endif %}
+
+{% if erro %}
+<div class="mensagem-erro">{{ erro }}</div>
+{% endif %}
+
+<form class="form-sugestao" action="/admin/senha" method="post" style="max-width: 400px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <div class="form-grupo">
+        <label class="form-label" for="senha_atual">$ senha_atual:</label>
+        <input type="password" name="senha_atual" id="senha_atual" placeholder="senha atual" class="form-input" required autocomplete="current-password">
+    </div>
+    <div class="form-grupo">
+        <label class="form-label" for="senha_nova">$ senha_nova:</label>
+        <input type="password" name="senha_nova" id="senha_nova" placeholder="nova senha (min 6 caracteres)" class="form-input" required minlength="6" autocomplete="new-password">
+    </div>
+    <div class="form-grupo">
+        <label class="form-label" for="senha_confirma">$ senha_confirma:</label>
+        <input type="password" name="senha_confirma" id="senha_confirma" placeholder="confirme a nova senha" class="form-input" required minlength="6" autocomplete="new-password">
+    </div>
+    <button type="submit" class="form-btn">alterar senha</button>
+</form>
+
+<p class="form-descricao" style="margin-top: 20px;"><a href="/admin/dashboard">&lt; voltar ao painel</a></p>
+{% endblock %}

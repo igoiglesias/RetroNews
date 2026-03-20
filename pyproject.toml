@@ -1,0 +1,21 @@
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+
+[tool.coverage.run]
+source = ["modules", "services", "routes", "tools"]
+omit = ["tests/*", "**/__init__.py"]
+
+[tool.coverage.report]
+fail_under = 100
+show_missing = true
+skip_empty = true
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.",
+]
+
+[tool.coverage.html]
+directory = "tests/htmlcov"

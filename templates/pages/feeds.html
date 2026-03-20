@@ -1,0 +1,25 @@
+{% extends "components/base.html" %}
+
+{% block titulo %}Feeds - RetroNews{% endblock %}
+
+{% block conteudo %}
+<h2 class="pagina-titulo">ls /feeds/</h2>
+
+{% if feeds %}
+<ul class="feeds-lista">
+    {% for feed in feeds %}
+    <li class="feed-item">
+        <div>
+            <a href="/feed/{{ feed.id }}">{{ feed.nome }}</a>
+            <span style="color: var(--texto-dim); font-size: 11px;"> — {{ feed.url_site }}</span>
+        </div>
+        <span class="feed-status {{ 'ativo' if feed.ativo else 'inativo' }}">
+            {{ "ativo" if feed.ativo else "inativo" }}
+        </span>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Nenhum feed cadastrado.</p>
+{% endif %}
+{% endblock %}

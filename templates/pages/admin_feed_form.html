@@ -1,0 +1,36 @@
+{% extends "components/base.html" %}
+
+{% block titulo %}Admin - {% if feed %}Editar{% else %}Novo{% endif %} Feed - RetroNews{% endblock %}
+
+{% block conteudo %}
+<h2 class="pagina-titulo">{% if feed %}vim /feeds/{{ feed.id }}{% else %}touch /feeds/novo{% endif %}</h2>
+
+{% include "components/admin_nav.html" %}
+
+{% if erro %}
+<div class="mensagem-erro">{{ erro }}</div>
+{% endif %}
+
+<form class="form-sugestao" action="{% if feed %}/admin/feeds/{{ feed.id }}/editar{% else %}/admin/feeds/novo{% endif %}" method="post" style="max-width: 600px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <div class="form-grupo">
+        <label class="form-label" for="nome">$ nome=</label>
+        <input type="text" name="nome" id="nome" value="{{ feed.nome if feed else (nome | default('', true)) }}" placeholder="Ex: Netflix Tech Blog" class="form-input" required maxlength="200">
+    </div>
+
+    <div class="form-grupo">
+        <label class="form-label" for="url_rss">$ url_rss=</label>
+        <input type="url" name="url_rss" id="url_rss" value="{{ feed.url_rss if feed else (url_rss | default('', true)) }}" placeholder="https://netflixtechblog.com/feed" class="form-input" required maxlength="500">
+    </div>
+
+    <div class="form-grupo">
+        <label class="form-label" for="url_site">$ url_site=</label>
+        <input type="url" name="url_site" id="url_site" value="{{ feed.url_site if feed else (url_site | default('', true)) }}" placeholder="https://netflixtechblog.com" class="form-input" required maxlength="500">
+    </div>
+
+    <button type="submit" class="form-btn">{% if feed %}salvar{% else %}criar feed{% endif %}</button>
+</form>
+
+<p class="form-descricao" style="margin-top: 20px;"><a href="/admin/feeds">&lt; voltar aos feeds</a></p>
+{% endblock %}

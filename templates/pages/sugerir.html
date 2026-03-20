@@ -1,0 +1,48 @@
+{% extends "components/base.html" %}
+
+{% block titulo %}Sugerir Site - RetroNews{% endblock %}
+
+{% block conteudo %}
+<h2 class="pagina-titulo">echo "sugestao" >> /inbox/</h2>
+
+{% if request.query_params.get('ok') %}
+<div class="mensagem-sucesso">
+    Sugestao enviada com sucesso. Sera analisada pelo admin. Obrigado!
+</div>
+{% endif %}
+
+{% if erro %}
+<div class="mensagem-erro">
+    {{ erro }}
+</div>
+{% endif %}
+
+<p class="form-descricao">Conhece um blog tech, engineering blog ou feed RSS interessante? Sugira aqui.</p>
+
+<form class="form-sugestao" action="/sugerir" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div style="display:none"><input type="text" name="honeypot" value="" tabindex="-1" autocomplete="off" aria-hidden="true"></div>
+
+    <div class="form-grupo">
+        <label class="form-label" for="nome_site">$ nome_site=</label>
+        <input type="text" name="nome_site" id="nome_site" value="{{ nome_site | default('', true) }}" placeholder="Ex: Netflix Tech Blog" class="form-input" required maxlength="200">
+    </div>
+
+    <div class="form-grupo">
+        <label class="form-label" for="url_site">$ url_site=</label>
+        <input type="url" name="url_site" id="url_site" value="{{ url_site | default('', true) }}" placeholder="https://netflixtechblog.com" class="form-input" required maxlength="500">
+    </div>
+
+    <div class="form-grupo">
+        <label class="form-label" for="url_rss">$ url_rss=</label>
+        <input type="url" name="url_rss" id="url_rss" value="{{ url_rss | default('', true) }}" placeholder="https://netflixtechblog.com/feed (opcional)" class="form-input" maxlength="500">
+    </div>
+
+    <div class="form-grupo">
+        <label class="form-label" for="motivo">$ motivo=</label>
+        <textarea name="motivo" id="motivo" placeholder="Por que esse site e interessante? (opcional)" class="form-textarea" maxlength="1000">{{ motivo | default('', true) }}</textarea>
+    </div>
+
+    <button type="submit" class="form-btn">enviar sugestao</button>
+</form>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "components/base.html" %}
+
+{% block titulo %}Admin - Dashboard - RetroNews{% endblock %}
+
+{% block conteudo %}
+<h2 class="pagina-titulo">cat /admin/status</h2>
+
+{% include "components/admin_nav.html" %}
+
+{% if request.query_params.get('msg') == 'atualizacao' %}
+<div class="mensagem-sucesso">Atualizacao de feeds iniciada em background.</div>
+{% endif %}
+
+<div class="dashboard-grid">
+    <div class="dashboard-card">
+        <div class="dashboard-valor">{{ total_feeds }}</div>
+        <div class="dashboard-label">feeds ativos</div>
+    </div>
+    <div class="dashboard-card">
+        <div class="dashboard-valor">{{ total_noticias }}</div>
+        <div class="dashboard-label">noticias</div>
+    </div>
+    <div class="dashboard-card">
+        <div class="dashboard-valor">{{ pendentes }}</div>
+        <div class="dashboard-label">sugestoes pendentes</div>
+    </div>
+    <div class="dashboard-card">
+        <div class="dashboard-valor">{{ ultima_atualizacao[:16] if ultima_atualizacao else "nunca" }}</div>
+        <div class="dashboard-label">ultima atualizacao</div>
+    </div>
+</div>
+
+<div class="dashboard-acoes">
+    <form action="/admin/atualizar-feeds" method="post" style="display:inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="form-btn">forcar atualizacao de feeds</button>
+    </form>
+</div>
+{% endblock %}
