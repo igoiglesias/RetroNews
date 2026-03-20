@@ -1,0 +1,26 @@
+{% extends "components/base.html" %}
+
+{% block titulo %}Sobre - RetroNews{% endblock %}
+
+{% block conteudo %}
+<h2 class="pagina-titulo">cat sobre.txt</h2>
+
+<div class="sobre">
+    <p>
+        RetroNews e um agregador de noticias focado em desenvolvimento de software,
+        arquitetura de sistemas, low-level, sistemas operacionais, engineering blogs
+        de grandes empresas e historias retro de computacao.
+    </p>
+    <p>
+        As noticias sao consumidas automaticamente via RSS feeds, resumidas por IA
+        e apresentadas nesta interface com estetica de terminal CRT dos anos 80.
+    </p>
+    <p>
+        Feito com FastAPI + Tortoise ORM + Jinja2 + SQLite.
+        Resumos gerados via OpenRouter (gpt-4o-mini).
+    </p>
+    <p>
+        > Porque ler noticias num terminal e mais divertido.
+    </p>
+</div>
+{% endblock %}

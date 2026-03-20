@@ -1,0 +1,23 @@
+{% extends "components/base.html" %}
+
+{% block titulo %}Admin Login - RetroNews{% endblock %}
+
+{% block conteudo %}
+<h2 class="pagina-titulo">sudo su</h2>
+
+{% if request.query_params.get('erro') %}
+<div class="mensagem-erro">Usuario ou senha invalidos.</div>
+{% endif %}
+
+<form class="form-sugestao" action="/admin/login" method="post" style="max-width: 400px;">
+    <div class="form-grupo">
+        <label class="form-label" for="usuario">$ usuario:</label>
+        <input type="text" name="usuario" id="usuario" placeholder="admin" class="form-input" required autofocus autocomplete="username">
+    </div>
+    <div class="form-grupo">
+        <label class="form-label" for="senha">$ senha:</label>
+        <input type="password" name="senha" id="senha" placeholder="********" class="form-input" required autocomplete="current-password">
+    </div>
+    <button type="submit" class="form-btn">autenticar</button>
+</form>
+{% endblock %}

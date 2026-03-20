@@ -1,0 +1,75 @@
+{% extends "components/base.html" %}
+
+{% block titulo %}Admin - Feeds - RetroNews{% endblock %}
+
+{% block conteudo %}
+<h2 class="pagina-titulo">ls /admin/feeds/</h2>
+
+{% include "components/admin_nav.html" %}
+
+{% if request.query_params.get('msg') == 'criado' %}
+<div class="mensagem-sucesso">Feed criado com sucesso.</div>
+{% elif request.query_params.get('msg') == 'salvo' %}
+<div class="mensagem-sucesso">Feed atualizado.</div>
+{% elif request.query_params.get('msg') == 'excluido' %}
+<div class="mensagem-sucesso">Feed e noticias excluidos.</div>
+{% endif %}
+
+<div class="admin-nav" style="margin-top: 12px;">
+    <a href="/admin/feeds?filtro=todos" class="{% if filtro == 'todos' %}ativo{% endif %}">todos</a>
+    <a href="/admin/feeds?filtro=ativos" class="{% if filtro == 'ativos' %}ativo{% endif %}">ativos</a>
+    <a href="/admin/feeds?filtro=inativos" class="{% if filtro == 'inativos' %}ativo{% endif %}">inativos</a>
+    <a href="/admin/feeds/novo" class="btn-aprovar" style="padding: 4px 12px;">+ novo feed</a>
+</div>
+
+{% if feeds %}
+<ul class="noticias">
+    {% for f in feeds %}
+    <li class="noticia">
+        <div class="noticia-titulo" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>{{ f.nome }}</span>
+            <span class="feed-status {% if f.ativo %}ativo{% else %}inativo{% endif %}">
+                {% if f.ativo %}ativo{% else %}inativo{% endif %}
+            </span>
+        </div>
+        <div class="noticia-meta">
+            <span>RSS: {{ f.url_rss | truncate(60) }}</span>
+            <span>Site: {{ f.url_site | truncate(40) }}</span>
+            <span>{{ f.total_noticias }} noticias</span>
+            <span>{{ f.criado_em.strftime('%d/%m/%Y') }}</span>
+        </div>
+        <div class="admin-acoes">
+            <a href="/admin/feeds/{{ f.id }}/editar" class="btn-aprovar" style="text-decoration: none; padding: 3px 10px;">editar</a>
+            <form action="/admin/feeds/{{ f.id }}/alternar" method="post" style="display:inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="{% if f.ativo %}btn-rejeitar{% else %}btn-aprovar{% endif %}">
+                    {% if f.ativo %}desativar{% else %}ativar{% endif %}
+                </button>
+            </form>
+            <form action="/admin/feeds/{{ f.id }}/excluir" method="post" style="display:inline"
+                  onsubmit="return confirm('Excluir feed e todas as noticias?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn-rejeitar">excluir</button>
+            </form>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+
+<div class="paginacao">
+    {% if pagina > 1 %}
+        <a href="?filtro={{ filtro }}&pagina={{ pagina - 1 }}">&lt; anterior</a>
+    {% else %}
+        <span class="desativado">&lt; anterior</span>
+    {% endif %}
+    <span class="atual">pagina {{ pagina }} de {{ total_paginas }}</span>
+    {% if pagina < total_paginas %}
+        <a href="?filtro={{ filtro }}&pagina={{ pagina + 1 }}">proxima &gt;</a>
+    {% else %}
+        <span class="desativado">proxima &gt;</span>
+    {% endif %}
+</div>
+{% else %}
+<p>Nenhum feed encontrado.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "components/base.html" %}
+
+{% block titulo %}Admin - Sugestoes - RetroNews{% endblock %}
+
+{% block conteudo %}
+<h2 class="pagina-titulo">cat /admin/sugestoes/ | head -{{ pendentes }}</h2>
+
+{% include "components/admin_nav.html" %}
+
+<div class="admin-nav" style="margin-top: 12px;">
+    <a href="/admin/sugestoes?status=pendente" class="{% if status_filtro == 'pendente' %}ativo{% endif %}">pendentes ({{ pendentes }})</a>
+    <a href="/admin/sugestoes?status=aprovada" class="{% if status_filtro == 'aprovada' %}ativo{% endif %}">aprovadas</a>
+    <a href="/admin/sugestoes?status=rejeitada" class="{% if status_filtro == 'rejeitada' %}ativo{% endif %}">rejeitadas</a>
+</div>
+
+{% if sugestoes %}
+<ul class="noticias">
+    {% for s in sugestoes %}
+    <li class="noticia sugestao-card">
+        <div class="noticia-titulo">{{ s.nome_site }}</div>
+        <div class="noticia-meta">
+            <span>{{ s.url_site }}</span>
+            {% if s.url_rss %}<span>RSS: {{ s.url_rss }}</span>{% endif %}
+            <span>{{ s.criado_em.strftime('%d/%m/%Y %H:%M') }}</span>
+            <span>IP: {{ s.ip_remetente }}</span>
+        </div>
+        {% if s.motivo %}
+        <div class="noticia-resumo">{{ s.motivo }}</div>
+        {% endif %}
+
+        {% if status_filtro == 'pendente' %}
+        <div class="admin-acoes">
+            <form action="/admin/sugestoes/{{ s.id }}/aprovar" method="post" style="display:inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn-aprovar">aprovar</button>
+            </form>
+            <form action="/admin/sugestoes/{{ s.id }}/rejeitar" method="post" style="display:inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn-rejeitar">rejeitar</button>
+            </form>
+        </div>
+        {% else %}
+        <div class="sugestao-status status-{{ s.status }}">{{ s.status }}</div>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+
+<div class="paginacao">
+    {% if pagina > 1 %}
+        <a href="?status={{ status_filtro }}&pagina={{ pagina - 1 }}">&lt; anterior</a>
+    {% else %}
+        <span class="desativado">&lt; anterior</span>
+    {% endif %}
+    <span class="atual">pagina {{ pagina }} de {{ total_paginas }}</span>
+    {% if pagina < total_paginas %}
+        <a href="?status={{ status_filtro }}&pagina={{ pagina + 1 }}">proxima &gt;</a>
+    {% else %}
+        <span class="desativado">proxima &gt;</span>
+    {% endif %}
+</div>
+{% else %}
+<p>Nenhuma sugestao com status "{{ status_filtro }}".</p>
+{% endif %}
+{% endblock %}
