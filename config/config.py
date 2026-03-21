@@ -17,3 +17,5 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 RATE_LIMIT = os.getenv("RATE_LIMIT", "30/minute")
 JWT_SECRET = os.getenv("JWT_SECRET", "retronews-jwt-secret-change-me")
 JWT_EXPIRA_HORAS = int(os.getenv("JWT_EXPIRA_HORAS", "8"))
+COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN", "")
+COOKIE_SECURE = os.getenv("COOKIE_SECURE", "False") == "True"

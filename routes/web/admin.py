@@ -4,6 +4,7 @@ from fastapi import APIRouter, Cookie, Form, Query, Request
 from fastapi.responses import RedirectResponse
 
 from bootstrap import templates
+from config.config import COOKIE_DOMAIN, COOKIE_SECURE
 from services.admin import autenticar, obter_admin, trocar_senha
 from services.admin_feed import (
     alternar_feed,
@@ -55,6 +56,8 @@ async def login(usuario: str = Form(...), senha: str = Form(...)):
     response.set_cookie(
         "admin_jwt", token,
         httponly=True, samesite="strict", max_age=3600 * 8,
+        secure=COOKIE_SECURE,
+        domain=COOKIE_DOMAIN or None,
     )
     return response
 
