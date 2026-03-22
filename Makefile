@@ -1,4 +1,4 @@
-.PHONY: dev prod install script test cov test-one reprocessar
+.PHONY: dev prod install script test cov test-one reprocessar migrar
 
 VENV := .venv
 PYTHON := $(VENV)/bin/python
@@ -31,3 +31,6 @@ test-one:
 
 reprocessar:
 	$(PYTHON) -m scripts.reprocessar
+
+migrar:
+	$(PYTHON) -m scripts.migrar

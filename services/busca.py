@@ -31,21 +31,52 @@ async def criar_indice_fts() -> None:
 
 async def reindexar_noticias() -> None:
     conn = Tortoise.get_connection("default")
-    await conn.execute_script("DELETE FROM noticia_fts;")
 
-    noticias = await Noticia.filter(resumo_ia__not_isnull=True).values("id", "titulo", "titulo_pt", "resumo_ia", "resumo_original")
+    # Descobrir quais notícias já estão indexadas
+    ja_indexadas = await conn.execute_query_dict(
+        "SELECT noticia_id FROM noticia_fts"
+    )
+    ids_indexados = {r["noticia_id"] for r in ja_indexadas}
 
-    for n in noticias:
-        titulo = normalizar_termo(n["titulo"] or "")
-        titulo_pt = normalizar_termo(n["titulo_pt"] or "")
-        resumo = normalizar_termo(n["resumo_ia"] or n["resumo_original"] or "")
+    # Buscar apenas notícias processadas que não estão no FTS
+    noticias = await Noticia.filter(resumo_ia__not_isnull=True).values(
+        "id", "titulo", "titulo_pt", "resumo_ia", "resumo_original"
+    )
+    novas = [n for n in noticias if n["id"] not in ids_indexados]
 
+    if not novas:
+        logger.info("FTS5 atualizado — nenhuma noticia nova para indexar")
+        return
+
+    # Remover do FTS notícias que não existem mais no banco
+    ids_banco = {n["id"] for n in noticias}
+    ids_remover = ids_indexados - ids_banco
+    if ids_remover:
+        placeholders = ",".join("?" * len(ids_remover))
         await conn.execute_query(
-            "INSERT INTO noticia_fts (noticia_id, titulo, titulo_pt, resumo) VALUES (?, ?, ?, ?)",
-            [n["id"], titulo, titulo_pt, resumo],
+            f"DELETE FROM noticia_fts WHERE noticia_id IN ({placeholders})",
+            list(ids_remover),
         )
 
-    logger.info("Reindexadas %d noticias no FTS5", len(noticias))
+    # Inserir novas em batch
+    BATCH = 500
+    for i in range(0, len(novas), BATCH):
+        batch = novas[i : i + BATCH]
+        valores = []
+        for n in batch:
+            valores.extend([
+                n["id"],
+                normalizar_termo(n["titulo"] or ""),
+                normalizar_termo(n["titulo_pt"] or ""),
+                normalizar_termo(n["resumo_ia"] or n["resumo_original"] or ""),
+            ])
+        placeholders = ",".join(["(?, ?, ?, ?)"] * len(batch))
+        await conn.execute_query(
+            f"INSERT INTO noticia_fts (noticia_id, titulo, titulo_pt, resumo) VALUES {placeholders}",
+            valores,
+        )
+
+    logger.info("Reindexadas %d noticias novas no FTS5 (%d ja indexadas)", len(novas), len(ids_indexados))
 
 
 async def indexar_noticia(noticia_id: int, titulo: str, titulo_pt: str | None, resumo: str) -> None:

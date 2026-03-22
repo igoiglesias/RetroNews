@@ -14,6 +14,7 @@ from slowapi.util import get_remote_address
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.responses import Response
+from tortoise import Tortoise
 from tortoise.contrib.fastapi import RegisterTortoise
 
 from fastapi_cache import FastAPICache
@@ -40,6 +41,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         from services.scheduler import iniciar_scheduler
 
         FastAPICache.init(InMemoryBackend())
+
+        # WAL mode para leitura concorrente no SQLite
+        conn = Tortoise.get_connection("default")
+        await conn.execute_script("PRAGMA journal_mode=WAL;")
 
         await criar_indice_fts()
         await reindexar_noticias()
