@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import partial
 from time import mktime
 
@@ -57,7 +57,7 @@ async def processar_feed(feed: Feed) -> None:
             parsed_date = entrada.get("published_parsed")
             if parsed_date:
                 try:
-                    data_publicacao = datetime.fromtimestamp(mktime(parsed_date))
+                    data_publicacao = datetime.fromtimestamp(mktime(parsed_date), tz=timezone.utc)
                 except (ValueError, OverflowError):
                     pass
 

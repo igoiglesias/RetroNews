@@ -1,4 +1,4 @@
-.PHONY: dev prod superprod install script test cov test-one
+.PHONY: dev prod install script test cov test-one reprocessar
 
 VENV := .venv
 PYTHON := $(VENV)/bin/python
@@ -28,3 +28,6 @@ cov:
 
 test-one:
 	$(PYTHON) -m pytest $(path) -v
+
+reprocessar:
+	$(PYTHON) -m scripts.reprocessar

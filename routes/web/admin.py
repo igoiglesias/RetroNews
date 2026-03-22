@@ -381,7 +381,7 @@ async def reprocessar_noticia(
     if noticia:
         noticia.tentativas_ia = 0
         noticia.erro_ia = None
-        await noticia.save()
+        await noticia.save(update_fields=["tentativas_ia", "erro_ia"])
 
     return RedirectResponse("/admin/processamento", status_code=303)
 

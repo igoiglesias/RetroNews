@@ -1,6 +1,8 @@
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -92,3 +94,16 @@ app.add_middleware(GZipMiddleware, minimum_size=500)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="templates")
+
+FUSO_BR = ZoneInfo("America/Sao_Paulo")
+
+
+def _data_br(valor: datetime | None, fmt: str = "%d/%m/%Y %H:%M") -> str:
+    if valor is None:
+        return ""
+    if valor.tzinfo is None:
+        valor = valor.replace(tzinfo=ZoneInfo("UTC"))
+    return valor.astimezone(FUSO_BR).strftime(fmt)
+
+
+templates.env.filters["data_br"] = _data_br

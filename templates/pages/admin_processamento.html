@@ -22,7 +22,7 @@
             <div class="processamento-meta">
                 <span>feed: {{ noticia.feed.nome if noticia.feed else "?" }}</span>
                 <span>tentativas: {{ noticia.tentativas_ia }}/3</span>
-                <span>{{ noticia.criado_em.strftime('%d/%m %H:%M') }}</span>
+                <span>{{ noticia.criado_em | data_br('%d/%m %H:%M') }}</span>
             </div>
             {% if noticia.erro_ia %}
             <div class="processamento-erro">erro: {{ noticia.erro_ia | truncate(120) }}</div>
@@ -60,7 +60,7 @@
 <div class="log-container">
     {% for log in logs %}
     <div class="log-entry log-{{ log.tipo }}">
-        <span class="log-hora">{{ log.criado_em.strftime('%d/%m %H:%M') }}</span>
+        <span class="log-hora">{{ log.criado_em | data_br('%d/%m %H:%M') }}</span>
         <span class="log-tipo">[{{ log.tipo }}]</span>
         <span class="log-msg">{{ log.mensagem }}</span>
         {% if log.detalhes %}

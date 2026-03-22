@@ -93,17 +93,19 @@ async def consultar_creditos() -> dict | None:
     try:
         async with httpx.AsyncClient() as client:
             resposta = await client.get(
-                "https://openrouter.ai/api/v1/auth/key",
+                "https://openrouter.ai/api/v1/credits",
                 headers={"Authorization": f"Bearer {OPENROUTER_API_KEY}"},
                 timeout=10.0,
             )
             resposta.raise_for_status()
 
         dados = resposta.json().get("data", {})
+        total_credits = dados.get("total_credits", 0)
+        total_usage = dados.get("total_usage", 0)
         return {
-            "limite": dados.get("limit"),
-            "uso": dados.get("usage"),
-            "restante": (dados.get("limit") or 0) - (dados.get("usage") or 0),
+            "limite": total_credits,
+            "uso": total_usage,
+            "restante": total_credits - total_usage,
         }
     except Exception as e:
         logger.error("Erro ao consultar creditos OpenRouter: %s", e)

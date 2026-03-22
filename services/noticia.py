@@ -104,7 +104,7 @@ async def obter_status() -> dict:
     total_feeds = await Feed.filter(ativo=True).count()
     total_noticias = await Noticia.all().count()
     ultima = await Noticia.all().order_by("-criado_em").first()
-    ultima_atualizacao = ultima.criado_em.isoformat() if ultima else None
+    ultima_atualizacao = ultima.criado_em if ultima else None
 
     return {
         "total_feeds": total_feeds,

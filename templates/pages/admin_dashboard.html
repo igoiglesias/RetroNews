@@ -29,7 +29,7 @@
         <div class="dashboard-label">sugestoes pendentes</div>
     </div>
     <div class="dashboard-card">
-        <div class="dashboard-valor">{{ ultima_atualizacao[:16] if ultima_atualizacao else "nunca" }}</div>
+        <div class="dashboard-valor">{{ ultima_atualizacao | data_br if ultima_atualizacao else "nunca" }}</div>
         <div class="dashboard-label">ultima atualizacao</div>
     </div>
 </div>

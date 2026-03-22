@@ -21,7 +21,7 @@
         <div class="noticia-meta">
             <span>{{ s.url_site }}</span>
             {% if s.url_rss %}<span>RSS: {{ s.url_rss }}</span>{% endif %}
-            <span>{{ s.criado_em.strftime('%d/%m/%Y %H:%M') }}</span>
+            <span>{{ s.criado_em | data_br }}</span>
             <span>IP: {{ s.ip_remetente }}</span>
         </div>
         {% if s.motivo %}

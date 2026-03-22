@@ -36,7 +36,7 @@
             <span>RSS: {{ f.url_rss | truncate(60) }}</span>
             <span>Site: {{ f.url_site | truncate(40) }}</span>
             <span>{{ f.total_noticias }} noticias</span>
-            <span>{{ f.criado_em.strftime('%d/%m/%Y') }}</span>
+            <span>{{ f.criado_em | data_br('%d/%m/%Y') }}</span>
         </div>
         <div class="admin-acoes">
             <a href="/admin/feeds/{{ f.id }}/editar" class="btn-aprovar" style="text-decoration: none; padding: 3px 10px;">editar</a>

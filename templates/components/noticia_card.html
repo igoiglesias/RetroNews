@@ -5,7 +5,7 @@
     <div class="noticia-meta">
         <span>{{ noticia.feed.nome if noticia.feed else "?" }}</span>
         {% if noticia.autor %}<span>{{ noticia.autor }}</span>{% endif %}
-        <span>{{ noticia.data_publicacao.strftime('%d/%m/%Y %H:%M') if noticia.data_publicacao else noticia.criado_em.strftime('%d/%m/%Y %H:%M') }}</span>
+        <span>{{ (noticia.data_publicacao or noticia.criado_em) | data_br }}</span>
     </div>
     {% if noticia.resumo_ia %}
     <div class="noticia-resumo">
