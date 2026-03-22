@@ -4,7 +4,9 @@ from fastapi import APIRouter, Cookie, Form, Query, Request
 from fastapi.responses import RedirectResponse
 
 from bootstrap import templates
-from config.config import COOKIE_DOMAIN, COOKIE_SECURE
+from config.config import COOKIE_DOMAIN, COOKIE_SECURE, OPENROUTER_ALERTA_CREDITOS
+from databases.models import LogProcessamento, Noticia
+from modules.openrouter import consultar_creditos
 from services.admin import autenticar, obter_admin, trocar_senha
 from services.admin_feed import (
     alternar_feed,
@@ -14,8 +16,9 @@ from services.admin_feed import (
     listar_feeds_admin,
     obter_feed,
 )
+from services.config_ia import inicializar_config_ia, invalidar_cache_config, obter_config_ia, salvar_config_ia
 from services.feed import atualizar_todos_feeds
-from services.noticia import obter_status
+from services.noticia import obter_status, obter_status_processamento
 from services.sugestao import aprovar_sugestao, contar_pendentes, listar_sugestoes, rejeitar_sugestao
 from tools.seguranca import gerar_csrf_token, gerar_jwt, validar_csrf_token, validar_jwt
 
@@ -78,12 +81,25 @@ async def dashboard(request: Request, admin_jwt: str | None = Cookie(None)):
         return _redirecionar_login()
 
     stats = await obter_status()
+    stats_ia = await obter_status_processamento()
     pendentes = await contar_pendentes()
+    creditos = await consultar_creditos()
     csrf = gerar_csrf_token(usuario)
+
+    alerta_creditos = False
+    if creditos and creditos["restante"] is not None:
+        alerta_creditos = creditos["restante"] < OPENROUTER_ALERTA_CREDITOS
 
     return templates.TemplateResponse(
         request, "pages/admin_dashboard.html",
-        context={**stats, "pendentes": pendentes, "csrf_token": csrf, "usuario": usuario},
+        context={
+            **stats, **stats_ia,
+            "pendentes": pendentes,
+            "creditos": creditos,
+            "alerta_creditos": alerta_creditos,
+            "csrf_token": csrf,
+            "usuario": usuario,
+        },
     )
 
 
@@ -298,6 +314,135 @@ async def rejeitar(
 
     await rejeitar_sugestao(sugestao_id)
     return RedirectResponse("/admin/sugestoes", status_code=303)
+
+
+# ── Processamento ──
+
+@router.get("/processamento")
+async def painel_processamento(
+    request: Request,
+    filtro: str = Query("pendentes"),
+    pagina: int = Query(1, ge=1),
+    admin_jwt: str | None = Cookie(None),
+):
+    usuario = await _obter_admin_logado(admin_jwt)
+    if not usuario:
+        return _redirecionar_login()
+
+    import math
+    ITENS_POR_PAGINA = 20
+
+    if filtro == "erros":
+        query = Noticia.filter(erro_ia__not_isnull=True)
+    elif filtro == "falhadas":
+        from config.config import MAX_TENTATIVAS_IA
+        query = Noticia.filter(resumo_ia__isnull=True, tentativas_ia__gte=MAX_TENTATIVAS_IA)
+    else:
+        from config.config import MAX_TENTATIVAS_IA
+        query = Noticia.filter(resumo_ia__isnull=True, tentativas_ia__lt=MAX_TENTATIVAS_IA)
+
+    total = await query.count()
+    total_paginas = max(1, math.ceil(total / ITENS_POR_PAGINA))
+    pagina = min(pagina, total_paginas)
+    offset = (pagina - 1) * ITENS_POR_PAGINA
+
+    noticias = await query.prefetch_related("feed").order_by("-criado_em").offset(offset).limit(ITENS_POR_PAGINA)
+    logs = await LogProcessamento.all().order_by("-criado_em").limit(50)
+    csrf = gerar_csrf_token(usuario)
+
+    return templates.TemplateResponse(
+        request, "pages/admin_processamento.html",
+        context={
+            "noticias": noticias,
+            "logs": logs,
+            "filtro": filtro,
+            "pagina": pagina,
+            "total_paginas": total_paginas,
+            "csrf_token": csrf,
+            "usuario": usuario,
+        },
+    )
+
+
+@router.post("/reprocessar/{noticia_id}")
+async def reprocessar_noticia(
+    noticia_id: int,
+    csrf_token: str = Form(...),
+    admin_jwt: str | None = Cookie(None),
+):
+    usuario = await _obter_admin_logado(admin_jwt)
+    if not usuario:
+        return _redirecionar_login()
+
+    if not validar_csrf_token(csrf_token, usuario):
+        return RedirectResponse("/admin/processamento?erro=csrf", status_code=303)
+
+    noticia = await Noticia.get_or_none(id=noticia_id)
+    if noticia:
+        noticia.tentativas_ia = 0
+        noticia.erro_ia = None
+        await noticia.save()
+
+    return RedirectResponse("/admin/processamento", status_code=303)
+
+
+# ── Config IA ──
+
+@router.get("/config-ia")
+async def pagina_config_ia(
+    request: Request,
+    admin_jwt: str | None = Cookie(None),
+):
+    usuario = await _obter_admin_logado(admin_jwt)
+    if not usuario:
+        return _redirecionar_login()
+
+    await inicializar_config_ia()
+    prompt = await obter_config_ia("system_prompt")
+    modelo = await obter_config_ia("modelo")
+    csrf = gerar_csrf_token(usuario)
+
+    return templates.TemplateResponse(
+        request, "pages/admin_config_ia.html",
+        context={
+            "system_prompt": prompt or "",
+            "modelo": modelo or "",
+            "csrf_token": csrf,
+            "usuario": usuario,
+        },
+    )
+
+
+@router.post("/config-ia")
+async def salvar_config_ia_post(
+    request: Request,
+    system_prompt: str = Form(...),
+    modelo: str = Form(...),
+    csrf_token: str = Form(...),
+    admin_jwt: str | None = Cookie(None),
+):
+    usuario = await _obter_admin_logado(admin_jwt)
+    if not usuario:
+        return _redirecionar_login()
+
+    if not validar_csrf_token(csrf_token, usuario):
+        return RedirectResponse("/admin/config-ia?erro=csrf", status_code=303)
+
+    await salvar_config_ia("system_prompt", system_prompt)
+    await salvar_config_ia("modelo", modelo)
+    invalidar_cache_config()
+
+    csrf = gerar_csrf_token(usuario)
+    return templates.TemplateResponse(
+        request, "pages/admin_config_ia.html",
+        context={
+            "system_prompt": system_prompt,
+            "modelo": modelo,
+            "csrf_token": csrf,
+            "usuario": usuario,
+            "sucesso": True,
+        },
+    )
 
 
 # ── Senha ──

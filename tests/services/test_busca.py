@@ -35,8 +35,9 @@ async def test_busca_com_acentos():
     n = await Noticia.create(
         feed=feed, titulo="Programação avançada",
         url="https://f.com/2", resumo_original="Artigo tecnico",
+        resumo_ia="Comentario sobre programacao",
     )
-    await indexar_noticia(n.id, n.titulo, None, n.resumo_original)
+    await indexar_noticia(n.id, n.titulo, None, n.resumo_ia)
 
     resultado = await buscar_noticias("programacao")
     assert len(resultado["noticias"]) == 1

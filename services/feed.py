@@ -1,5 +1,7 @@
+import asyncio
 import logging
 from datetime import datetime
+from functools import partial
 from time import mktime
 
 import feedparser
@@ -18,7 +20,10 @@ async def buscar_todos_feeds() -> list[Feed]:
 
 async def processar_feed(feed: Feed) -> None:
     try:
-        resultado = feedparser.parse(feed.url_rss)
+        loop = asyncio.get_running_loop()
+        resultado = await loop.run_in_executor(
+            None, partial(feedparser.parse, feed.url_rss)
+        )
     except Exception as e:
         logger.error("Erro ao buscar feed %s: %s", feed.nome, e)
         return
@@ -70,12 +75,22 @@ async def processar_feed(feed: Feed) -> None:
 
 
 async def atualizar_todos_feeds() -> None:
+    from services.resumo import registrar_log
+
     feeds = await buscar_todos_feeds()
     logger.info("Atualizando %d feeds", len(feeds))
 
+    total_novas = 0
     for feed in feeds:
+        antes = await Noticia.filter(feed=feed).count()
         await processar_feed(feed)
+        depois = await Noticia.filter(feed=feed).count()
+        novas = depois - antes
+        total_novas += novas
+        if novas:
+            await registrar_log("feed_atualizado", f"{feed.nome}: {novas} noticia(s) nova(s)")
 
     await processar_noticias_pendentes()
-    invalidar_cache()
+    await invalidar_cache()
+    await registrar_log("feed_atualizado", f"Ciclo completo: {len(feeds)} feeds, {total_novas} noticias novas")
     logger.info("Atualizacao concluida")

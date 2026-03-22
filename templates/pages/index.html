@@ -3,31 +3,22 @@
 {% block titulo %}RetroNews{% endblock %}
 
 {% block conteudo %}
-<h2 class="pagina-titulo">ls -lt /noticias/</h2>
+<h2 class="pagina-titulo" id="titulo-pagina">{% if buscando %}grep -ri "{{ termo }}" /noticias/{% else %}ls -lt /noticias/{% endif %}</h2>
 
-{% if noticias %}
-<ul class="noticias">
-    {% for noticia in noticias %}
-    {% include "components/noticia_card.html" %}
-    {% endfor %}
-</ul>
+<form class="busca-form" id="busca-form">
+    <div class="busca-input-wrapper">
+        <span class="busca-prompt">$&nbsp;</span>
+        <label for="campo-busca" class="sr-only">Buscar noticias</label>
+        <input type="text" name="q" id="campo-busca" value="{{ termo }}" placeholder="buscar noticias..." class="busca-input" autocomplete="off">
+        <button type="submit" class="busca-btn">buscar</button>
+    </div>
+</form>
 
-<div class="paginacao">
-    {% if pagina > 1 %}
-        <a href="?pagina={{ pagina - 1 }}">&lt; anterior</a>
-    {% else %}
-        <span class="desativado">&lt; anterior</span>
-    {% endif %}
-
-    <span class="atual">pagina {{ pagina }} de {{ total_paginas }}</span>
-
-    {% if pagina < total_paginas %}
-        <a href="?pagina={{ pagina + 1 }}">proxima &gt;</a>
-    {% else %}
-        <span class="desativado">proxima &gt;</span>
-    {% endif %}
-</div>
-{% else %}
-<p>Nenhuma noticia encontrada ainda. Os feeds serao atualizados em breve.</p>
+{% if buscando and termo %}
+<p class="busca-resultado">{{ noticias | length }} resultado(s) — pagina {{ pagina }} de {{ total_paginas }}</p>
 {% endif %}
+
+<div id="noticias-container">
+{% include "partials/noticias_lista.html" %}
+</div>
 {% endblock %}

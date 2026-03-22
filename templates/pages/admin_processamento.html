@@ -1,0 +1,73 @@
+{% extends "components/base.html" %}
+
+{% block titulo %}Admin - Processamento IA - RetroNews{% endblock %}
+
+{% block conteudo %}
+<h2 class="pagina-titulo">tail -f /var/log/ia-processing.log</h2>
+
+{% include "components/admin_nav.html" %}
+
+<div class="filtro-bar">
+    <a href="/admin/processamento?filtro=pendentes" class="filtro-link{% if filtro == 'pendentes' %} ativo{% endif %}">pendentes</a>
+    <a href="/admin/processamento?filtro=erros" class="filtro-link{% if filtro == 'erros' %} ativo{% endif %}">com erro</a>
+    <a href="/admin/processamento?filtro=falhadas" class="filtro-link{% if filtro == 'falhadas' %} ativo{% endif %}">falhadas</a>
+</div>
+
+{% if noticias %}
+<div class="admin-tabela">
+    {% for noticia in noticias %}
+    <div class="processamento-item">
+        <div class="processamento-info">
+            <div class="processamento-titulo">{{ noticia.titulo | truncate(80) }}</div>
+            <div class="processamento-meta">
+                <span>feed: {{ noticia.feed.nome if noticia.feed else "?" }}</span>
+                <span>tentativas: {{ noticia.tentativas_ia }}/3</span>
+                <span>{{ noticia.criado_em.strftime('%d/%m %H:%M') }}</span>
+            </div>
+            {% if noticia.erro_ia %}
+            <div class="processamento-erro">erro: {{ noticia.erro_ia | truncate(120) }}</div>
+            {% endif %}
+        </div>
+        <div class="processamento-acoes">
+            <form action="/admin/reprocessar/{{ noticia.id }}" method="post" style="display:inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn-aprovar">reprocessar</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="paginacao">
+    {% if pagina > 1 %}
+        <a href="?filtro={{ filtro }}&pagina={{ pagina - 1 }}">&lt; anterior</a>
+    {% else %}
+        <span class="desativado">&lt; anterior</span>
+    {% endif %}
+    <span class="atual">pagina {{ pagina }} de {{ total_paginas }}</span>
+    {% if pagina < total_paginas %}
+        <a href="?filtro={{ filtro }}&pagina={{ pagina + 1 }}">proxima &gt;</a>
+    {% else %}
+        <span class="desativado">proxima &gt;</span>
+    {% endif %}
+</div>
+{% else %}
+<p>Nenhuma noticia neste filtro.</p>
+{% endif %}
+
+{% if logs %}
+<h3 class="secao-titulo">log de eventos recentes</h3>
+<div class="log-container">
+    {% for log in logs %}
+    <div class="log-entry log-{{ log.tipo }}">
+        <span class="log-hora">{{ log.criado_em.strftime('%d/%m %H:%M') }}</span>
+        <span class="log-tipo">[{{ log.tipo }}]</span>
+        <span class="log-msg">{{ log.mensagem }}</span>
+        {% if log.detalhes %}
+        <div class="log-detalhes">{{ log.detalhes | truncate(200) }}</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

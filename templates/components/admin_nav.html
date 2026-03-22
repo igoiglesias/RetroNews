@@ -1,6 +1,8 @@
 <div class="admin-nav">
     <a href="/admin/dashboard" class="{% if '/dashboard' in request.url.path %}ativo{% endif %}">dashboard</a>
     <a href="/admin/feeds" class="{% if '/feeds' in request.url.path %}ativo{% endif %}">feeds</a>
+    <a href="/admin/processamento" class="{% if '/processamento' in request.url.path %}ativo{% endif %}">processamento</a>
+    <a href="/admin/config-ia" class="{% if '/config-ia' in request.url.path %}ativo{% endif %}">config ia</a>
     <a href="/admin/sugestoes" class="{% if '/sugestoes' in request.url.path %}ativo{% endif %}">sugestoes{% if pendentes is defined and pendentes > 0 %} ({{ pendentes }}){% endif %}</a>
     <a href="/admin/senha" class="{% if '/senha' in request.url.path %}ativo{% endif %}">senha</a>
     <a href="/admin/logout" class="logout">logout ({{ usuario }})</a>

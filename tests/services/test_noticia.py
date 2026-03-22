@@ -14,7 +14,10 @@ from services.noticia import (
 async def test_listar_noticias_retorna_paginado():
     feed = await Feed.create(nome="F", url_rss="https://f.com/rss", url_site="https://f.com")
     for i in range(25):
-        await Noticia.create(feed=feed, titulo=f"N{i}", url=f"https://f.com/{i}", resumo_original="R")
+        await Noticia.create(
+            feed=feed, titulo=f"N{i}", url=f"https://f.com/{i}",
+            resumo_original="R", resumo_ia="Comentario",
+        )
 
     dados = await listar_noticias(pagina=1)
     assert len(dados["noticias"]) == 20
@@ -26,7 +29,10 @@ async def test_listar_noticias_retorna_paginado():
 async def test_listar_noticias_pagina_2():
     feed = await Feed.create(nome="F", url_rss="https://f.com/rss", url_site="https://f.com")
     for i in range(25):
-        await Noticia.create(feed=feed, titulo=f"N{i}", url=f"https://f.com/{i}", resumo_original="R")
+        await Noticia.create(
+            feed=feed, titulo=f"N{i}", url=f"https://f.com/{i}",
+            resumo_original="R", resumo_ia="Comentario",
+        )
 
     dados = await listar_noticias(pagina=2)
     assert len(dados["noticias"]) == 5
@@ -41,10 +47,24 @@ async def test_listar_noticias_vazio():
 
 
 @pytest.mark.anyio
+async def test_listar_noticias_filtra_sem_ia():
+    feed = await Feed.create(nome="F", url_rss="https://f2.com/rss", url_site="https://f2.com")
+    await Noticia.create(feed=feed, titulo="Com IA", url="https://f2.com/1", resumo_original="R", resumo_ia="C")
+    await Noticia.create(feed=feed, titulo="Sem IA", url="https://f2.com/2", resumo_original="R")
+
+    dados = await listar_noticias(pagina=1)
+    assert len(dados["noticias"]) == 1
+    assert dados["noticias"][0].titulo == "Com IA"
+
+
+@pytest.mark.anyio
 async def test_listar_por_tag_existente():
     feed = await Feed.create(nome="F", url_rss="https://f.com/rss", url_site="https://f.com")
     tag = await Tag.create(nome="backend")
-    noticia = await Noticia.create(feed=feed, titulo="N1", url="https://f.com/1", resumo_original="R")
+    noticia = await Noticia.create(
+        feed=feed, titulo="N1", url="https://f.com/1",
+        resumo_original="R", resumo_ia="Comentario",
+    )
     await noticia.tags.add(tag)
 
     dados = await listar_por_tag(nome="backend", pagina=1)
@@ -61,7 +81,10 @@ async def test_listar_por_tag_inexistente():
 @pytest.mark.anyio
 async def test_listar_por_feed_existente():
     feed = await Feed.create(nome="Meu Feed", url_rss="https://f.com/rss", url_site="https://f.com")
-    await Noticia.create(feed=feed, titulo="N1", url="https://f.com/1", resumo_original="R")
+    await Noticia.create(
+        feed=feed, titulo="N1", url="https://f.com/1",
+        resumo_original="R", resumo_ia="Comentario",
+    )
 
     dados = await listar_por_feed(feed_id=feed.id, pagina=1)
     assert dados is not None

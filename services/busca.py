@@ -33,7 +33,7 @@ async def reindexar_noticias() -> None:
     conn = Tortoise.get_connection("default")
     await conn.execute_script("DELETE FROM noticia_fts;")
 
-    noticias = await Noticia.all().values("id", "titulo", "titulo_pt", "resumo_ia", "resumo_original")
+    noticias = await Noticia.filter(resumo_ia__not_isnull=True).values("id", "titulo", "titulo_pt", "resumo_ia", "resumo_original")
 
     for n in noticias:
         titulo = normalizar_termo(n["titulo"] or "")
@@ -95,7 +95,7 @@ async def buscar_noticias(termo: str, pagina: int = 1) -> dict:
     if not ids:
         return {"noticias": [], "pagina": pagina, "total_paginas": total_paginas, "termo": termo}
 
-    noticias = await Noticia.filter(id__in=ids).prefetch_related("feed", "tags")
+    noticias = await Noticia.filter(id__in=ids, resumo_ia__not_isnull=True).prefetch_related("feed", "tags")
 
     # manter a ordem do ranking FTS
     ordem = {nid: i for i, nid in enumerate(ids)}

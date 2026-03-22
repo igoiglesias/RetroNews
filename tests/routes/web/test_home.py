@@ -24,7 +24,10 @@ async def test_index_contem_titulo(cliente):
 @pytest.mark.anyio
 async def test_index_mostra_noticias(cliente):
     feed = await Feed.create(nome="Test", url_rss="https://t.com/rss", url_site="https://t.com")
-    await Noticia.create(feed=feed, titulo="Noticia Teste", url="https://t.com/1", resumo_original="Resumo")
+    await Noticia.create(
+        feed=feed, titulo="Noticia Teste", url="https://t.com/1",
+        resumo_original="Resumo", resumo_ia="Comentario IA",
+    )
 
     resposta = await cliente.get("/")
     assert "Noticia Teste" in resposta.text
@@ -34,7 +37,10 @@ async def test_index_mostra_noticias(cliente):
 async def test_index_paginacao(cliente):
     feed = await Feed.create(nome="Test", url_rss="https://t.com/rss", url_site="https://t.com")
     for i in range(25):
-        await Noticia.create(feed=feed, titulo=f"N{i}", url=f"https://t.com/{i}", resumo_original="R")
+        await Noticia.create(
+            feed=feed, titulo=f"N{i}", url=f"https://t.com/{i}",
+            resumo_original="R", resumo_ia="Comentario",
+        )
 
     resposta = await cliente.get("/?pagina=2")
     assert resposta.status_code == 200
@@ -45,3 +51,15 @@ async def test_index_paginacao(cliente):
 async def test_index_sem_noticias(cliente):
     resposta = await cliente.get("/")
     assert "Nenhuma noticia encontrada" in resposta.text
+
+
+@pytest.mark.anyio
+async def test_index_nao_mostra_noticia_sem_ia(cliente):
+    feed = await Feed.create(nome="Test", url_rss="https://t2.com/rss", url_site="https://t2.com")
+    await Noticia.create(
+        feed=feed, titulo="Sem IA", url="https://t2.com/1",
+        resumo_original="Resumo",
+    )
+
+    resposta = await cliente.get("/")
+    assert "Sem IA" not in resposta.text

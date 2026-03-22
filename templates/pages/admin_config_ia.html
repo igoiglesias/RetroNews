@@ -1,0 +1,31 @@
+{% extends "components/base.html" %}
+
+{% block titulo %}Admin - Config IA - RetroNews{% endblock %}
+
+{% block conteudo %}
+<h2 class="pagina-titulo">vim /etc/retronews/ia.conf</h2>
+
+{% include "components/admin_nav.html" %}
+
+{% if sucesso is defined and sucesso %}
+<div class="mensagem-sucesso">Configuracao salva com sucesso.</div>
+{% endif %}
+
+<form action="/admin/config-ia" method="post" class="form-sugestao">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <div class="form-grupo">
+        <label class="form-label" for="modelo">modelo openrouter</label>
+        <input type="text" name="modelo" id="modelo" value="{{ modelo }}" class="form-input" placeholder="openai/gpt-4o-mini">
+    </div>
+
+    <div class="form-grupo">
+        <label class="form-label" for="system_prompt">system prompt</label>
+        <textarea name="system_prompt" id="system_prompt" class="form-textarea form-textarea-grande" rows="20">{{ system_prompt }}</textarea>
+    </div>
+
+    <p class="form-descricao">O prompt deve conter {titulo} e {texto} como placeholders. O formato de resposta JSON deve ser mantido.</p>
+
+    <button type="submit" class="form-btn">salvar configuracao</button>
+</form>
+{% endblock %}

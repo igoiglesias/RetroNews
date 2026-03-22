@@ -1,0 +1,29 @@
+{% if noticias %}
+<ul class="noticias">
+    {% for noticia in noticias %}
+    {% include "components/noticia_card.html" %}
+    {% endfor %}
+</ul>
+
+<div class="paginacao">
+    {% if pagina > 1 %}
+        <a href="?{% if buscando %}q={{ termo }}&{% endif %}pagina={{ pagina - 1 }}" class="pagina-link">&lt; anterior</a>
+    {% else %}
+        <span class="desativado">&lt; anterior</span>
+    {% endif %}
+
+    <span class="atual">pagina {{ pagina }} de {{ total_paginas }}</span>
+
+    {% if pagina < total_paginas %}
+        <a href="?{% if buscando %}q={{ termo }}&{% endif %}pagina={{ pagina + 1 }}" class="pagina-link">proxima &gt;</a>
+    {% else %}
+        <span class="desativado">proxima &gt;</span>
+    {% endif %}
+</div>
+{% else %}
+    {% if buscando %}
+    <p>Nenhum resultado para "{{ termo }}". Tente outros termos.</p>
+    {% else %}
+    <p>Nenhuma noticia encontrada ainda. Os feeds serao atualizados em breve.</p>
+    {% endif %}
+{% endif %}

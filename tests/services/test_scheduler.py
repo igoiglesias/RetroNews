@@ -12,7 +12,7 @@ def test_iniciar_scheduler_retorna_scheduler():
         resultado = iniciar_scheduler()
 
     assert resultado is mock_instance
-    mock_instance.add_job.assert_called_once()
+    assert mock_instance.add_job.call_count == 3
     mock_instance.start.assert_called_once()
 
 

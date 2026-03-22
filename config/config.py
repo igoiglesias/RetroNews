@@ -19,3 +19,5 @@ JWT_SECRET = os.getenv("JWT_SECRET", "retronews-jwt-secret-change-me")
 JWT_EXPIRA_HORAS = int(os.getenv("JWT_EXPIRA_HORAS", "8"))
 COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN", "")
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "False") == "True"
+MAX_TENTATIVAS_IA = int(os.getenv("MAX_TENTATIVAS_IA", "3"))
+OPENROUTER_ALERTA_CREDITOS = float(os.getenv("OPENROUTER_ALERTA_CREDITOS", "1.0"))

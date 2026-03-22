@@ -14,6 +14,9 @@ from starlette.middleware.gzip import GZipMiddleware
 from starlette.responses import Response
 from tortoise.contrib.fastapi import RegisterTortoise
 
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.inmemory import InMemoryBackend
+
 from config.config import APP_DEBUG, APP_TITLE, LOG_LEVEL, RATE_LIMIT
 from databases.db import TORTOISE_ORM
 
@@ -31,10 +34,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         add_exception_handlers=True,
     ):
         from services.busca import criar_indice_fts, reindexar_noticias
+        from services.config_ia import inicializar_config_ia
         from services.scheduler import iniciar_scheduler
+
+        FastAPICache.init(InMemoryBackend())
 
         await criar_indice_fts()
         await reindexar_noticias()
+        await inicializar_config_ia()
 
         scheduler = iniciar_scheduler()
         yield

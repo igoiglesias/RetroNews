@@ -23,4 +23,4 @@ node_modules/
 *.jpg
 docs/
 *-shm
-*-wal
+*-wal.superpowers/

@@ -1,8 +1,13 @@
-import asyncio
-
 import pytest
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.inmemory import InMemoryBackend
 
 from tools.cache import cache_pagina, invalidar_cache
+
+
+@pytest.fixture(autouse=True)
+def _init_cache():
+    FastAPICache.init(InMemoryBackend())
 
 
 @pytest.mark.anyio
@@ -61,6 +66,6 @@ async def test_invalidar_cache_limpa_tudo():
         return {"dado": "valor"}
 
     await funcao()
-    invalidar_cache()
+    await invalidar_cache()
     await funcao()
     assert chamadas == 2

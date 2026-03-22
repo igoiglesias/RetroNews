@@ -5,7 +5,7 @@ jinja2
 httpx
 feedparser
 apscheduler
-cachetools
+fastapi-cache2
 python-dotenv
 slowapi
 unidecode

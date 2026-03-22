@@ -15,7 +15,7 @@ dev:
 	RETRONEWS_DISABLE_SCHEDULER=1 $(VENV)/bin/fastapi dev app.py
 
 prod:
-	$(VENV)/bin/gunicorn app:app -k uvicorn.workers.UvicornWorker -w 1 --bind 0.0.0.0:8000 --access-logfile - --error-logfile -
+	$(VENV)/bin/gunicorn app:app -k uvicorn.workers.UvicornWorker -w 1 --bind 0.0.0.0:8000 --timeout 120 --graceful-timeout 30 --access-logfile - --error-logfile -
 
 script:
 	$(PYTHON) -m scripts.$(name)

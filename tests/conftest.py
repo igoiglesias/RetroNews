@@ -3,6 +3,8 @@ import os
 os.environ["RETRONEWS_DISABLE_SCHEDULER"] = "1"
 
 import pytest_asyncio
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.inmemory import InMemoryBackend
 from httpx import ASGITransport, AsyncClient
 from tortoise import Tortoise
 
@@ -12,7 +14,8 @@ from tools.cache import invalidar_cache
 
 @pytest_asyncio.fixture(autouse=True)
 async def _inicializa_banco(tmp_path):
-    invalidar_cache()
+    FastAPICache.init(InMemoryBackend())
+    await invalidar_cache()
 
     db_file = tmp_path / "test.db"
     db_url = f"sqlite://{db_file}"

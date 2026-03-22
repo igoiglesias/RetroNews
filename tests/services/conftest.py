@@ -1,6 +1,8 @@
 import warnings
 
 import pytest_asyncio
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.inmemory import InMemoryBackend
 from tortoise import Tortoise
 from tortoise.warnings import TortoiseLoopSwitchWarning
 
@@ -12,7 +14,8 @@ async def _inicializa_banco(anyio_backend, tmp_path):
     db_file = tmp_path / "test.db"
     db_url = f"sqlite://{db_file}"
 
-    invalidar_cache()
+    FastAPICache.init(InMemoryBackend())
+    await invalidar_cache()
 
     await Tortoise.init(
         db_url=db_url,

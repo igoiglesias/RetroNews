@@ -35,12 +35,19 @@ Responda APENAS em JSON valido, sem markdown:
 {{"titulo_pt": "...", "comentario": "...", "tags": ["...", "..."]}}"""
 
 
-async def gerar_resumo_e_tags(titulo: str, texto: str) -> dict | None:
+async def gerar_resumo_e_tags(
+    titulo: str,
+    texto: str,
+    prompt_template: str | None = None,
+    modelo: str | None = None,
+) -> dict | None:
     if not OPENROUTER_API_KEY:
         logger.warning("OPENROUTER_API_KEY nao configurada")
         return None
 
-    prompt = PROMPT_TEMPLATE.format(titulo=titulo, texto=texto[:3000])
+    template = prompt_template or PROMPT_TEMPLATE
+    model = modelo or OPENROUTER_MODEL
+    prompt = template.format(titulo=titulo, texto=texto[:3000])
 
     try:
         async with httpx.AsyncClient() as client:
@@ -51,7 +58,7 @@ async def gerar_resumo_e_tags(titulo: str, texto: str) -> dict | None:
                     "Content-Type": "application/json",
                 },
                 json={
-                    "model": OPENROUTER_MODEL,
+                    "model": model,
                     "messages": [{"role": "user", "content": prompt}],
                 },
                 timeout=30.0,
@@ -76,4 +83,28 @@ async def gerar_resumo_e_tags(titulo: str, texto: str) -> dict | None:
         return None
     except Exception as e:
         logger.error("Erro inesperado no OpenRouter: %s", e)
+        return None
+
+
+async def consultar_creditos() -> dict | None:
+    if not OPENROUTER_API_KEY:
+        return None
+
+    try:
+        async with httpx.AsyncClient() as client:
+            resposta = await client.get(
+                "https://openrouter.ai/api/v1/auth/key",
+                headers={"Authorization": f"Bearer {OPENROUTER_API_KEY}"},
+                timeout=10.0,
+            )
+            resposta.raise_for_status()
+
+        dados = resposta.json().get("data", {})
+        return {
+            "limite": dados.get("limit"),
+            "uso": dados.get("usage"),
+            "restante": (dados.get("limit") or 0) - (dados.get("usage") or 0),
+        }
+    except Exception as e:
+        logger.error("Erro ao consultar creditos OpenRouter: %s", e)
         return None
