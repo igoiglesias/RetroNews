@@ -23,9 +23,22 @@
                 <span>feed: {{ noticia.feed.nome if noticia.feed else "?" }}</span>
                 <span>tentativas: {{ noticia.tentativas_ia }}/3</span>
                 <span>{{ noticia.criado_em | data_br('%d/%m %H:%M') }}</span>
+                <span>url: <a href="{{ noticia.url }}" target="_blank" rel="noopener" style="color: var(--texto-dim)">{{ noticia.url | truncate(50) }}</a></span>
             </div>
             {% if noticia.erro_ia %}
-            <div class="processamento-erro">erro: {{ noticia.erro_ia | truncate(120) }}</div>
+            <div class="processamento-erro" onclick="this.classList.toggle('expandido')" style="cursor:pointer" title="clique para expandir">
+                erro: {{ noticia.erro_ia }}
+            </div>
+            {% elif filtro == 'pendentes' and noticia.tentativas_ia == 0 %}
+            <div class="processamento-aviso">aguardando proximo ciclo do scheduler</div>
+            {% endif %}
+            {% if noticia.resumo_original %}
+            <details class="log-detalhe-toggle">
+                <summary>ver resumo original ({{ noticia.resumo_original | length }} chars)</summary>
+                <div class="log-detalhe-conteudo">{{ noticia.resumo_original | truncate(500) }}</div>
+            </details>
+            {% else %}
+            <div class="processamento-aviso">sem resumo original — IA pode falhar por falta de conteudo</div>
             {% endif %}
         </div>
         <div class="processamento-acoes">
@@ -59,12 +72,15 @@
 <h3 class="secao-titulo">log de eventos recentes</h3>
 <div class="log-container">
     {% for log in logs %}
-    <div class="log-entry log-{{ log.tipo }}">
+    <div class="log-entry log-{{ log.tipo }}{% if log.detalhes %} clicavel{% endif %}"{% if log.detalhes %} onclick="this.querySelector('.log-detalhe-toggle')?.toggleAttribute('open')" style="cursor:pointer"{% endif %}>
         <span class="log-hora">{{ log.criado_em | data_br('%d/%m %H:%M') }}</span>
         <span class="log-tipo">[{{ log.tipo }}]</span>
         <span class="log-msg">{{ log.mensagem }}</span>
         {% if log.detalhes %}
-        <div class="log-detalhes">{{ log.detalhes | truncate(200) }}</div>
+        <details class="log-detalhe-toggle" onclick="event.stopPropagation()">
+            <summary style="color: var(--texto-dim); font-size: 0.85em; margin-top: 4px;">ver detalhes</summary>
+            <div class="log-detalhe-conteudo">{{ log.detalhes }}</div>
+        </details>
         {% endif %}
     </div>
     {% endfor %}

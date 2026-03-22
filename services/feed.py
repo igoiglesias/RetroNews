@@ -89,8 +89,12 @@ async def atualizar_todos_feeds() -> None:
         total_novas += novas
         if novas:
             await registrar_log("feed_atualizado", f"{feed.nome}: {novas} noticia(s) nova(s)")
+        # Yield para não bloquear o event loop (heartbeat do gunicorn)
+        await asyncio.sleep(0)
 
+    await registrar_log("feed_atualizado", f"Ciclo feeds: {len(feeds)} feeds, {total_novas} noticias novas")
+
+    # Processar IA separadamente — cada notícia individualmente com yield
     await processar_noticias_pendentes()
     await invalidar_cache()
-    await registrar_log("feed_atualizado", f"Ciclo completo: {len(feeds)} feeds, {total_novas} noticias novas")
     logger.info("Atualizacao concluida")

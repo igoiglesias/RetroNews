@@ -1,3 +1,9 @@
+// Forçar scroll to top no refresh (CRT animations deslocam posição)
+if ("scrollRestoration" in history) {
+    history.scrollRestoration = "manual";
+}
+window.scrollTo(0, 0);
+
 (function () {
     const campoBusca = document.getElementById("campo-busca");
     const container = document.getElementById("noticias-container");

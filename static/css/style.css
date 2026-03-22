@@ -957,6 +957,44 @@ a:focus-visible {
     font-size: 12px;
     margin-top: 4px;
     font-style: italic;
+    max-height: 1.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: max-height 0.3s, white-space 0.1s;
+}
+
+.processamento-erro.expandido {
+    max-height: 500px;
+    white-space: normal;
+}
+
+.processamento-aviso {
+    color: var(--ambar);
+    font-size: 12px;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+.log-detalhe-toggle {
+    margin-top: 4px;
+}
+
+.log-detalhe-conteudo {
+    color: var(--texto-dim);
+    font-size: 12px;
+    margin-top: 4px;
+    padding: 8px;
+    background: var(--fundo);
+    border: 1px solid var(--borda);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.log-entry.clicavel:hover {
+    background: var(--fundo-hover);
 }
 
 .processamento-acoes {

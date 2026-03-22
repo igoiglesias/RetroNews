@@ -14,6 +14,7 @@ async def registrar_log(tipo: str, mensagem: str, detalhes: str | None = None) -
 
 async def gerar_resumo(noticia: Noticia) -> None:
     noticia.tentativas_ia += 1
+    await noticia.save(update_fields=["tentativas_ia"])
 
     from services.config_ia import obter_config_ia
     prompt_template = await obter_config_ia("system_prompt")
@@ -26,14 +27,14 @@ async def gerar_resumo(noticia: Noticia) -> None:
         )
     except Exception as e:
         noticia.erro_ia = str(e)
-        await noticia.save()
+        await noticia.save(update_fields=["erro_ia"])
         await registrar_log("ia_erro", f"Erro ao chamar IA para: {noticia.titulo}", str(e))
         logger.error("Erro na chamada IA para noticia %d: %s", noticia.id, e)
         return
 
     if resultado is None:
         noticia.erro_ia = "IA retornou resposta vazia ou invalida"
-        await noticia.save()
+        await noticia.save(update_fields=["erro_ia"])
         await registrar_log("ia_erro", f"IA sem resposta para: {noticia.titulo}")
         logger.warning("Nao foi possivel gerar comentario para: %s", noticia.titulo)
         return
@@ -42,7 +43,7 @@ async def gerar_resumo(noticia: Noticia) -> None:
     noticia.erro_ia = None
     if resultado["titulo_pt"]:
         noticia.titulo_pt = resultado["titulo_pt"]
-    await noticia.save()
+    await noticia.save(update_fields=["resumo_ia", "erro_ia", "titulo_pt"])
 
     for nome_tag in resultado["tags"]:
         tag, _ = await Tag.get_or_create(nome=nome_tag.lower().strip())
@@ -61,6 +62,8 @@ async def gerar_resumo(noticia: Noticia) -> None:
 
 
 async def processar_noticias_pendentes() -> None:
+    import asyncio
+
     pendentes = await Noticia.filter(
         resumo_ia__isnull=True,
         tentativas_ia__lt=MAX_TENTATIVAS_IA,
@@ -71,4 +74,9 @@ async def processar_noticias_pendentes() -> None:
         try:
             await gerar_resumo(noticia)
         except Exception as e:
+            noticia.erro_ia = str(e)
+            await noticia.save(update_fields=["erro_ia"])
+            await registrar_log("ia_erro", f"Excecao ao processar: {noticia.titulo}", str(e))
             logger.error("Erro ao gerar resumo para noticia %d: %s", noticia.id, e)
+        # Yield para não bloquear event loop (heartbeat do gunicorn)
+        await asyncio.sleep(0)
