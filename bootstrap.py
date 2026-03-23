@@ -112,3 +112,6 @@ def _data_br(valor: datetime | None, fmt: str = "%d/%m/%Y %H:%M") -> str:
 
 
 templates.env.filters["data_br"] = _data_br
+
+from config.config import SITE_URL
+templates.env.globals["site_url"] = SITE_URL

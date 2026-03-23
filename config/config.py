@@ -21,3 +21,6 @@ COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN", "")
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "False") == "True"
 MAX_TENTATIVAS_IA = int(os.getenv("MAX_TENTATIVAS_IA", "3"))
 OPENROUTER_ALERTA_CREDITOS = float(os.getenv("OPENROUTER_ALERTA_CREDITOS", "1.0"))
+
+_protocolo = "https" if COOKIE_SECURE else "http"
+SITE_URL = f"{_protocolo}://{COOKIE_DOMAIN}" if COOKIE_DOMAIN else "http://localhost:8000"

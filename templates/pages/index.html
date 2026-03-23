@@ -1,6 +1,7 @@
 {% extends "components/base.html" %}
 
 {% block titulo %}RetroNews{% endblock %}
+{% block descricao %}Ultimas noticias de desenvolvimento — software, arquitetura, sistemas e tecnologia com comentarios de IA.{% endblock %}
 
 {% block conteudo %}
 <h2 class="pagina-titulo" id="titulo-pagina">{% if buscando %}grep -ri "{{ termo }}" /noticias/{% else %}ls -lt /noticias/{% endif %}</h2>

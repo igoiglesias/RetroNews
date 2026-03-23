@@ -1,6 +1,7 @@
 {% extends "components/base.html" %}
 
 {% block titulo %}#{{ nome_tag }} - RetroNews{% endblock %}
+{% block descricao %}Noticias sobre #{{ nome_tag }} — desenvolvimento, software e tecnologia com comentarios de IA.{% endblock %}
 
 {% block conteudo %}
 <h2 class="pagina-titulo">grep -r "{{ nome_tag }}" /noticias/</h2>

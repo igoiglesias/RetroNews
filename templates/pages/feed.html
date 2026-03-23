@@ -1,6 +1,7 @@
 {% extends "components/base.html" %}
 
 {% block titulo %}{{ nome_feed }} - RetroNews{% endblock %}
+{% block descricao %}Noticias de {{ nome_feed }} com comentarios de IA — RetroNews.{% endblock %}
 
 {% block conteudo %}
 <h2 class="pagina-titulo">tail -f /feeds/{{ nome_feed | lower | replace(" ", "-") }}.log</h2>
